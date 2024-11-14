@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>net8.0;net7.0;net6.0;netstandard2.0</TargetFrameworks>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
+
+		<!-- Native libraries 설정 -->
+		<SQLiteNetNativeLibsDirectory>runtimes</SQLiteNetNativeLibsDirectory>
+		<PublishReadyToRun>true</PublishReadyToRun>
+		<RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+
+		<!-- RID 설정 -->
+		<EnableWindowsTargeting>true</EnableWindowsTargeting>
+		<RuntimeIdentifiers>win-x64;win-x86;linux-x64;osx-x64</RuntimeIdentifiers>
+
+		<!-- NuGet Package Info -->
+		<PackageId>JDLogger</PackageId>
+		<Version>1.0.3</Version>
+		<Authors>Ryong</Authors>
+		<Company>Ryong</Company>
+		<Description>A lightweight SQLite-based logging library for .NET applications. Supports both program logging and data logging with structured log data storage and easy querying capabilities. Features include hierarchical logging scopes, detailed exception logging, various export formats (CSV etc.), custom log models, and convenient exception handling.</Description>
+		<PackageTags>logging;sqlite;structured-logging;logger;dotnet;exceptions</PackageTags>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
+
+	<!-- .NET Standard 2.0 전용 참조 -->
+	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+		<PackageReference Include="System.Text.Json" Version="9.0.0" />
+		<PackageReference Include="SQLitePCLRaw.provider.e_sqlite3.netstandard11" Version="1.1.14" />
+	</ItemGroup>
+
+	<!-- .NET Standard 2.0 이외 버전 전용 참조 -->
+	<ItemGroup Condition="'$(TargetFramework)' != 'netstandard2.0'">
+		<PackageReference Include="SQLitePCLRaw.provider.e_sqlite3" Version="2.1.10" />
+	</ItemGroup>
+
+	<!-- 공통 참조 -->
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="/" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
+		<PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.10" />
+	</ItemGroup>
+
+	<!-- Native libs 복사 설정 -->
+	<ItemGroup>
+		<Content Include="$(SQLiteNetNativeLibsDirectory)\**\*" Link="runtimes\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="runtimes" />
+	</ItemGroup>
+
+	<!-- SQLite 런타임 설정 -->
+	<ItemGroup>
+		<RuntimeHostConfigurationOption Include="System.Runtime.Loader.UseRidGraph" Value="true" />
+	</ItemGroup>
+</Project>
