@@ -18,11 +18,14 @@
 
 		<!-- NuGet Package Info -->
 		<PackageId>JDLogger</PackageId>
-		<Version>1.0.3</Version>
+		<Version>1.0.4</Version>
 		<Authors>Ryong</Authors>
 		<Company>Ryong</Company>
 		<Description>A lightweight SQLite-based logging library for .NET applications. Supports both program logging and data logging with structured log data storage and easy querying capabilities. Features include hierarchical logging scopes, detailed exception logging, various export formats (CSV etc.), custom log models, and convenient exception handling.</Description>
 		<PackageTags>logging;sqlite;structured-logging;logger;dotnet;exceptions</PackageTags>
+		<PackageProjectUrl>https://github.com/HyeongRyong/JDLogger</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/HyeongRyong/JDLogger</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
