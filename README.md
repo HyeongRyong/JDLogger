@@ -24,7 +24,7 @@ dotnet add package JDLogger
 ```
 
 ### 초기화
-
+- **초기화를 하지 않고 사용하는 경우 `jd__program_log.db` 라는 파일로 자동으로 초기화됩니다.**
 ```csharp
 // 기본 초기화
 JDLogger.Initialize("my_log.db");
@@ -67,8 +67,32 @@ static void ProductLogExample()
 }
 ```
 
-### 3. 예외 처리 및 로깅
+### 3. 로그 처리기
+- 로그가 작성 된 이후 처리를 위한 처리기 등록이 가능합니다.
+```csharp
+static void ProductLogExample()
+{
+    var log = JDLogger.BeginScope<TestSequence>();
+    
+    // 로그 처리기 등록
+    log.WhenLogged<TestSequence, ProductLog>(x => {
+        Console.WriteLine(x.ProductName); 
+    });
+    
+    // 테스트용 로그 작성
+    var productLog = new ProductLog
+    {
+        LotId = "LOT001",
+        ProductName = "TestProduct",
+    };
 
+    log.Log(productLog);
+}
+```
+
+### 4. 예외 처리 및 로깅
+- 예외가 발생할 가능성이 높은 작업을 기록합니다.
+- `operationName`를 통해 어떤 작업 도중 예외가 발생 했는지 작업 단위의 추적이 가능합니다.
 ```csharp
 static void UseTryCatchExample()
 {
@@ -82,7 +106,7 @@ static void UseTryCatchExample()
         {
             Console.WriteLine(s[i]); // will throw exception
         }
-    }, "indexReferenceJob", continue: true);
+    }, operationName: "indexReferenceJob", @continue: true);
 
     // 오늘 발생한 에러 로그 조회
     foreach (var ex in log.All().Today().Where(entity => entity.Level == LogLevel.Error))
@@ -92,7 +116,7 @@ static void UseTryCatchExample()
 }
 ```
 
-### 4. 객체 상태 덤프
+### 5. 객체 상태 덤프
 
 ```csharp
 static void UseDumpExample()
@@ -177,8 +201,7 @@ log.All()
 ```csharp
 public class ProductLog : ILogModel
 {
-    public string Class { get; set; }
-    public LogLevel Level { get; set; }
+    [ExportIgnore] public string Scope { get; set; }
     public DateTime Time { get; set; }
     public string LotId { get; set; }
     public string ProductName { get; set; }
@@ -208,4 +231,18 @@ log.All().Export("logs.txt", new TabDelimitedFormatter("a\tb\tc\td\te\tf"));
 // 커스텀 포맷터 사용
 var customFormatter = new CustomLogFormatter();
 log.All().Export("logs.txt", customFormatter);
+```
+
+- `ExportIgnore` Attribute를 사용하여 내보내는 컬럼을 무시할 수 있습니다.
+```csharp
+
+// 커스텀 데이터 로깅 모델의 Scope 출력 제어어
+public class ProductLog : ILogModel
+{
+    [ExportIgnore] public string Scope { get; set; }
+    public DateTime Time { get; set; }
+    public string LotId { get; set; }
+    public string ProductName { get; set; }
+}
+
 ```
