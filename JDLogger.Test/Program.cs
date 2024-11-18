@@ -16,7 +16,7 @@ internal class Program
         //ApplicationLogExample();
 
         // 제품 데이터 로깅용 예제
-        ProductLogExample();
+        //ProductLogExample();
 
         // 예외 발생 가능성의 민감한 작업(try-catch)의 로깅 예제
         /*UseTryCatchExample();
@@ -24,6 +24,10 @@ internal class Program
         // Dump 메소드 사용 예제
         UseDumpExample();
         */
+
+        // 타임아웃 예제
+        TimeoutExample();
+
         Console.ReadLine();
     }
 
@@ -103,6 +107,24 @@ internal class Program
         foreach (var l in log.Where(entity => entity.Scope == nameof(DumpExample)))
         {
             Console.WriteLine(l.Message);
+        }
+    }
+
+    private static void TimeoutExample()
+    {
+        var logger = JDLogger.BeginScope();
+
+        // 동기 버전 사용
+        bool isTimeout = logger.Timeout(() =>
+        {
+            Console.WriteLine("시작");
+            Thread.Sleep(5000); // 오래 걸리는 작업
+            Console.WriteLine("중지");
+        }, milliseconds: 3000, operationName: "긴 작업", @continue: true);
+
+        if (isTimeout)
+        {
+            Console.WriteLine("타임아웃 발생");
         }
     }
 

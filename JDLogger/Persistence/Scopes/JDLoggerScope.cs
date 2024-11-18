@@ -93,7 +93,7 @@ public class JDLoggerScope<T> : ILoggerScope
     /// <summary>
     /// try-catch 블록에서 사용할 수 있는 편의 메서드입니다. (비동기 버전)
     /// </summary>
-    public async Task TryCatchAsync(Func<Task> action, string operationName = null, bool @continue = true)
+    public async Task TryCatchAsync(Func<Task> action, string operationName = null, bool @continue = false)
     {
         try
         {
@@ -104,6 +104,83 @@ public class JDLoggerScope<T> : ILoggerScope
             Dump(ex, LogLevel.Error, $"비동기 작업(`{operationName ?? "operation"}`)중 오류가 발생 했습니다.");
             if (@continue is false)
                 throw;
+        }
+    }
+
+    /// <summary>
+    /// 지정된 시간 내에 작업을 완료하지 못하면 TimeoutException을 발생시키고 로그를 남깁니다.
+    /// </summary>
+    /// <param name="action">실행할 작업</param>
+    /// <param name="milliseconds">타임아웃 시간 (밀리초)</param>
+    /// <param name="operationName">작업 이름 (로깅용)</param>
+    /// <param name="continue">예외 발생 시 계속 진행할지 여부</param>
+    /// <returns>타임아웃 발생 여부</returns>
+    public bool Timeout(Action action, int milliseconds, string operationName = null, bool @continue = true)
+    {
+        try
+        {
+            using var cts = new CancellationTokenSource();
+            var task = Task.Run(action, cts.Token);
+            if (!task.Wait(milliseconds))
+            {
+                cts.Cancel();
+                throw new TimeoutException($"작업이 {milliseconds}ms 내에 완료되지 않았습니다.");
+            }
+            return false; // 타임아웃 발생하지 않음
+        }
+        catch (Exception ex)
+        {
+            var actualException = ex is AggregateException aggregateException
+                ? aggregateException.InnerException
+                : ex;
+            Dump(actualException, LogLevel.Error,
+                $"타임아웃 작업(`{operationName ?? "operation"}`)중 오류가 발생했습니다.",
+                new { Timeout = milliseconds });
+
+            var isTimeout = actualException is TimeoutException;
+            if (@continue is false)
+                throw;
+
+            return isTimeout; // 타임아웃 발생 여부 반환
+        }
+    }
+
+    /// <summary>
+    /// 지정된 시간 내에 비동기 작업을 완료하지 못하면 TimeoutException을 발생시키고 로그를 남깁니다.
+    /// </summary>
+    /// <param name="action">실행할 비동기 작업</param>
+    /// <param name="milliseconds">타임아웃 시간 (밀리초)</param>
+    /// <param name="operationName">작업 이름 (로깅용)</param>
+    /// <param name="continue">예외 발생 시 계속 진행할지 여부</param>
+    /// <returns>타임아웃 발생 여부</returns>
+    public async Task<bool> TimeoutAsync(Func<Task> action, int milliseconds, string operationName = null, bool @continue = true)
+    {
+        try
+        {
+            using var cts = new CancellationTokenSource();
+            var timeoutTask = Task.Delay(milliseconds, cts.Token);
+            var actionTask = action();
+            var completedTask = await Task.WhenAny(actionTask, timeoutTask);
+            if (completedTask == timeoutTask)
+            {
+                cts.Cancel();
+                throw new TimeoutException($"작업이 {milliseconds}ms 내에 완료되지 않았습니다.");
+            }
+            cts.Cancel(); // 타임아웃 태스크 취소
+            await actionTask; // 작업이 예외를 던졌다면 여기서 다시 던져짐
+            return false; // 타임아웃 발생하지 않음
+        }
+        catch (Exception ex)
+        {
+            Dump(ex, LogLevel.Error,
+                $"비동기 타임아웃 작업(`{operationName ?? "operation"}`)중 오류가 발생했습니다.",
+                new { Timeout = milliseconds });
+
+            var isTimeout = ex is TimeoutException;
+            if (@continue is false)
+                throw;
+
+            return isTimeout; // 타임아웃 발생 여부 반환
         }
     }
 

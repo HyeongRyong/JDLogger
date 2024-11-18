@@ -11,8 +11,4 @@
     <ProjectReference Include="..\JDLogger\JDLogger.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Mapper\" />
-  </ItemGroup>
-
 </Project>

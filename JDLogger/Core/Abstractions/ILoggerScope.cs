@@ -83,4 +83,24 @@ public interface ILoggerScope
     /// <param name="continue">예외가 발생하면 작업을 중지시키지 않고 계속 진행 여부 (기본값: true)</param>
     /// <returns>비동기 작업 완료를 나타내는 Task</returns>
     Task TryCatchAsync(Func<Task> action, string operationName = null, bool @continue = true);
+
+    /// <summary>
+    /// 지정된 시간 내에 작업을 완료하지 못하면 TimeoutException을 발생시키고 로그를 남깁니다.
+    /// </summary>
+    /// <param name="action">실행할 작업</param>
+    /// <param name="milliseconds">타임아웃 시간 (밀리초)</param>
+    /// <param name="operationName">작업 이름 (로깅용)</param>
+    /// <param name="continue">예외 발생 시 계속 진행할지 여부</param>
+    /// <returns>타임아웃 발생 여부</returns>
+    public bool Timeout(Action action, int milliseconds, string operationName = null, bool @continue = true);
+
+    /// <summary>
+    /// 지정된 시간 내에 비동기 작업을 완료하지 못하면 TimeoutException을 발생시키고 로그를 남깁니다.
+    /// </summary>
+    /// <param name="action">실행할 비동기 작업</param>
+    /// <param name="milliseconds">타임아웃 시간 (밀리초)</param>
+    /// <param name="operationName">작업 이름 (로깅용)</param>
+    /// <param name="continue">예외 발생 시 계속 진행할지 여부</param>
+    /// <returns>타임아웃 발생 여부</returns>
+    Task<bool> TimeoutAsync(Func<Task> action, int milliseconds, string operationName = null, bool @continue = true);
 }
