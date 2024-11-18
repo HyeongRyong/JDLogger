@@ -116,7 +116,30 @@ static void UseTryCatchExample()
 }
 ```
 
-### 5. 객체 상태 덤프
+### 5. 타임아웃 로깅
+
+```csharp
+static void TimeoutExample()
+{
+    var logger = JDLogger.BeginScope();
+
+    // 동기 버전 사용
+    bool isTimeout = logger.Timeout(() =>
+    {
+        Console.WriteLine("시작");
+        Thread.Sleep(5000); // 오래 걸리는 작업
+        Console.WriteLine("중지");
+    }, milliseconds: 3000, operationName: "긴 작업");
+
+    if (isTimeout)
+    {
+        Console.WriteLine("타임아웃 발생");
+    }
+}
+```
+
+
+### 6. 객체 상태 덤프
 
 ```csharp
 static void UseDumpExample()
