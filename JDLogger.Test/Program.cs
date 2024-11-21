@@ -1,9 +1,7 @@
-﻿using JDLogger.Persistence.Extensions;
+﻿using JDLoggerV1.Persistence.Extensions;
 using JDLoggerV1.Formatting;
-using JDLoggerV1.Persistence.Extensions;
 using JDLoggerV1.Test.Models;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics;
 
 namespace JDLoggerV1.Test;
 
@@ -26,9 +24,34 @@ internal class Program
         */
 
         // 타임아웃 예제
-        TimeoutExample();
+        //TimeoutExample();
+
+        // 여러개의 커스텀 로그 등록
+        InsertCustomLogsExample();
 
         Console.ReadLine();
+    }
+
+    private static void InsertCustomLogsExample()
+    {
+        var log = JDLogger.BeginScope<Program>();
+
+        var logs = new List<ProductLog>();
+        for (int i = 0; i < 13000; i++)
+        {
+            // 테스트용 로그 작성
+            var productLog = new ProductLog
+            {
+                LotId = $"LOT00{i}",
+                ProductName = "TestProduct",
+            };
+
+            logs.Add(productLog);
+        }
+
+        log.Logs(logs);
+
+        Console.WriteLine("끗");
     }
 
 

@@ -278,4 +278,46 @@ public class JDLoggerScope<T> : ILoggerScope
                      .ToList();
         }
     }
+
+    /// <summary>
+    /// 여러 개의 로그 모델을 일괄적으로 기록합니다.
+    /// </summary>
+    /// <typeparam name="TModel">로그 모델 타입</typeparam>
+    /// <param name="models">기록할 로그 모델 컬렉션</param>
+    public void Logs<TModel>(IEnumerable<TModel> models) where TModel : ILogModel, new()
+    {
+        foreach (var model in models)
+        {
+            model.Scope = _scopeName;
+            model.Time = DateTime.UtcNow;
+        }
+
+        var mapper = JDLogger.GetMapper<TModel>();
+
+        lock (_logLock)
+        {
+            _db.BeginTransaction();
+            try
+            {
+                foreach (var model in models)
+                {
+                    mapper.Insert(_db, model);
+                }
+                _db.Commit();
+            }
+            catch (Exception)
+            {
+                _db.Rollback();
+                throw;
+            }
+        }
+
+        if (OnLogged != null)
+        {
+            foreach (var model in models)
+            {
+                OnLogged.Invoke(model);
+            }
+        }
+    }
 }

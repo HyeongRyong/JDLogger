@@ -3,7 +3,7 @@ using JDLoggerV1.Core.Models;
 using JDLoggerV1.Persistence.Scopes;
 using Microsoft.Extensions.Logging;
 
-namespace JDLogger.Persistence.Extensions;
+namespace JDLoggerV1.Persistence.Extensions;
 
 public static class LoggerScopeExtensions
 {

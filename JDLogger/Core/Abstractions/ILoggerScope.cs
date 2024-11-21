@@ -28,6 +28,14 @@ public interface ILoggerScope
     void Log(LogLevel level, string message);
 
     /// <summary>
+    /// 여러 개의 로그 모델을 일괄적으로 기록합니다.
+    /// </summary>
+    /// <typeparam name="TModel">로그 모델 타입</typeparam>
+    /// <param name="models">기록할 로그 모델 컬렉션</param>
+    void Logs<TModel>(IEnumerable<TModel> models) where TModel : ILogModel, new();
+
+
+    /// <summary>
     /// 객체를 로그에 기록합니다.
     /// Exception인 경우 예외 정보를 상세히 기록하고, <br />
     /// 그 외의 객체는 JSON으로 직렬화하여 기록합니다. <br />
